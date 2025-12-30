@@ -1,0 +1,2 @@
+Lexical Error at line 2: Invalid character '#'
+Lexical Error at line 2: Invalid character '.'
