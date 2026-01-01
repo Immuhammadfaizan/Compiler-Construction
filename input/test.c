@@ -1,5 +1,5 @@
 int x = 10;
-int y = 11;
+int y = 30; 
 
 if (x > y) {
     printf("x is greater");

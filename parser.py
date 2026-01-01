@@ -1,11 +1,3 @@
-"""
-Docstring for parser.py
-
-This file checks whether the token sequence follows C language structure.
-It validates syntax using simple grammar rules.
-This is the second phase of the compiler.
-"""
-
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens

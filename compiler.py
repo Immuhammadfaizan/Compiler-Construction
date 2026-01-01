@@ -1,11 +1,3 @@
-"""
-Docstring for compiler.py
-
-This is the main compiler module that orchastrate all phases of the compiler.
-This will help us to integrate lexer, parser, sementic analyzer, intermediate code generator, optimizer, and 
-code generator.
-"""
-
 from lexer import Lexer
 from parser import Parser
 from semantic import SemanticAnalyzer

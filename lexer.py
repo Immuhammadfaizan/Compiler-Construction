@@ -1,14 +1,3 @@
-""" 
-this file ==> "lexer.py" is specifically created for lexical analysis of a simple 
-programming language called "SimpleLang".
-It simpifies the process of breaking down source code into tokens, identifying keywords,
-identifiers, operators, and handling errors for unrecognized tokens.
-"""
-
-"""
-we are using 'input/test.c' as out input file for this lexer.
-"""
-
 import re
 
 class Lexer:

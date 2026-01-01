@@ -1,11 +1,3 @@
-"""
-Docstring for semantic.py
-
-This phase checks the meaning of the program.
-It ensures correct variable usage and type consistency.
-Now supports built in functions and function calls without treating them as variables.
-"""
-
 class SemanticAnalyzer:
     def __init__(self, tokens):
         self.tokens = tokens

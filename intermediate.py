@@ -1,10 +1,3 @@
-"""
-Docstring for intermediate.py
-
-This phase converts source level constructs into intermediate code.
-The output is Three Address Code (TAC).
-"""
-
 class IntermediateCodeGenerator:
     def __init__(self, tokens):
         self.tokens = tokens

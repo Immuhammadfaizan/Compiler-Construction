@@ -1,10 +1,3 @@
-"""
-Docstring for codegen.py
-
-This phase converts optimized intermediate code into target code.
-The output is assembly like instructions for the virtual machine.
-"""
-
 class CodeGenerator:
     def __init__(self, optimized_code):
         self.code = optimized_code

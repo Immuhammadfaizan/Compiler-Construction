@@ -1,10 +1,3 @@
-"""
-Docstring for optimizer.py
-
-This phase improves intermediate code efficiency.
-It removes unnecessary and repeated operations.
-"""
-
 class CodeOptimizer:
     def __init__(self, intermediate_code):
         self.code = intermediate_code
