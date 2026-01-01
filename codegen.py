@@ -18,50 +18,46 @@ class CodeGenerator:
 
     def _translate(self, line):
         parts = line.split()
+        instr = parts[0]
 
-        op = parts[0]
-
-        # Label definition
-        if op == "LABEL":
+        # keep label exactly for executor
+        if instr == "LABEL":
             label = parts[1]
-            self.target.append(f"{label}:")
+            self.target.append(f"LABEL {label}")
             return
 
-        # Unconditional jump
-        if op == "GOTO":
+        # keep goto exactly for executor
+        if instr == "GOTO":
             label = parts[1]
-            self.target.append(f"JMP {label}")
+            self.target.append(f"GOTO {label}")
             return
 
-        # Conditional jump: IF_FALSE x GOTO L1
-        if op == "IF_FALSE":
-            condition = parts[1]        # e.g., t1 or x
-            _ = parts[2]                # GOTO
-            label = parts[3]            # L1
-            self.target.append(f"LOAD R1, {condition}")
-            self.target.append(f"JZ R1, {label}")
+        # keep IF_FALSE intact for executor
+        if instr == "IF_FALSE":
+            left = parts[1]
+            op = parts[2]
+            right = parts[3]
+            label = parts[5]
+            self.target.append(f"IF_FALSE {left} {op} {right} GOTO {label}")
             return
 
-        # Print statement: PRINT "Hello" t1 42
-        if op == "PRINT":
-            # Reconstruct the full PRINT instruction exactly as needed
-            # Keeps string quotes and spaces intact
-            full_print = " ".join(parts)
-            self.target.append(full_print)
+        # print instruction
+        if instr == "PRINT":
+            self.target.append(line)
             return
 
-        # Assignment: x = 10    or    t1 = x + y
+        # assignment or arithmetic
         if len(parts) >= 3 and parts[1] == "=":
-            left = parts[0]             # destination (variable or temp)
+            dest = parts[0]
 
-            # Simple assignment: x = 10
+            # simple assignment
             if len(parts) == 3:
                 value = parts[2]
                 self.target.append(f"LOAD R1, {value}")
-                self.target.append(f"STORE {left}, R1")
+                self.target.append(f"STORE {dest}, R1")
                 return
 
-            # Arithmetic: t1 = x + y
+            # arithmetic assignment
             if len(parts) == 5:
                 op1 = parts[2]
                 operator = parts[3]
@@ -71,16 +67,16 @@ class CodeGenerator:
                 self.target.append(f"LOAD R2, {op2}")
 
                 if operator == "+":
-                    self.target.append(f"ADD R1, R2, {left}")
+                    self.target.append(f"ADD R1, R2, {dest}")
                 elif operator == "-":
-                    self.target.append(f"SUB R1, R2, {left}")
+                    self.target.append(f"SUB R1, R2, {dest}")
                 elif operator == "*":
-                    self.target.append(f"MUL R1, R2, {left}")
+                    self.target.append(f"MUL R1, R2, {dest}")
                 elif operator == "/":
-                    self.target.append(f"DIV R1, R2, {left}")
+                    self.target.append(f"DIV R1, R2, {dest}")
                 else:
-                    raise ValueError(f"Unsupported operator: {operator}")
+                    raise ValueError(f"unsupported operator {operator}")
 
                 return
 
-        raise ValueError(f"Unknown or malformed intermediate instruction: {line}")
+        raise ValueError(f"unknown intermediate instruction: {line}")

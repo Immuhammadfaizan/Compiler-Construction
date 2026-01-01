@@ -1,4 +1,4 @@
-""" 
+"""
 Docstring for intermediate.py
 
 This phase converts source level constructs into intermediate code.
@@ -13,12 +13,14 @@ class IntermediateCodeGenerator:
         self.temp_count = 0
         self.label_count = 0
 
+
     def generate(self):
         while not self._is_end():
             self._statement()
         return self.code
 
-    # basic helpers
+
+    # helpers
     def _is_end(self):
         return self.pos >= len(self.tokens)
 
@@ -31,11 +33,6 @@ class IntermediateCodeGenerator:
         if not self._is_end():
             self.pos += 1
 
-    def _peek(self):
-        if self.pos + 1 < len(self.tokens):
-            return self.tokens[self.pos + 1]
-        return None
-
     def _new_temp(self):
         self.temp_count += 1
         return f"t{self.temp_count}"
@@ -44,7 +41,8 @@ class IntermediateCodeGenerator:
         self.label_count += 1
         return f"L{self.label_count}"
 
-    # statement handling
+
+    # statement dispatcher
     def _statement(self):
         token = self._current()
         if not token:
@@ -68,23 +66,25 @@ class IntermediateCodeGenerator:
             self._while_stmt()
 
         else:
-            self._advance()  # skip unknown
+            self._advance()
 
-    # declaration: int x = 10;
+
+    # int x = 10;
     def _declaration(self):
-        self._advance()  # skip datatype
+        self._advance()  # datatype
         var_name = self._current()[1]
         self._advance()  # identifier
 
         if self._current() and self._current()[1] == "=":
-            self._advance()  # =
+            self._advance()
             value = self._expression()
             self.code.append(f"{var_name} = {value}")
 
         if self._current() and self._current()[1] == ";":
-            self._advance()  # ;
+            self._advance()
 
-    # assignment: x = y + 5;
+
+    # x = y + 5;
     def _assignment(self):
         var_name = self._current()[1]
         self._advance()  # identifier
@@ -94,9 +94,10 @@ class IntermediateCodeGenerator:
         self.code.append(f"{var_name} = {value}")
 
         if self._current() and self._current()[1] == ";":
-            self._advance()  # ;
+            self._advance()
 
-    # expressions: + - * /
+
+    # expression handling
     def _expression(self):
         left = self._term()
 
@@ -109,6 +110,7 @@ class IntermediateCodeGenerator:
             left = temp
 
         return left
+
 
     def _term(self):
         left = self._factor()
@@ -123,57 +125,58 @@ class IntermediateCodeGenerator:
 
         return left
 
+
     def _factor(self):
         tok = self._current()
         if not tok:
-            return "0"  # safety
+            return "0"
 
         value = tok[1]
         self._advance()
         return value
 
-    # printf("Hello", x + y, 42);
+
+    # printf("text", expr, var)
     def _print_stmt(self):
         self._advance()  # printf
         self._advance()  # (
 
         args = []
 
-        # parse arguments
         while not self._is_end() and self._current()[1] != ")":
             tok = self._current()
 
             if tok[0] == "STRING":
-                # Keep quotes exactly as in source
-                args.append(tok[1])  # e.g. "Hello\nWorld"
+                args.append(tok[1])
                 self._advance()
-
             else:
-                # expression argument
-                expr_result = self._expression()
-                args.append(expr_result)
+                expr = self._expression()
+                args.append(expr)
 
-            # comma?
             if self._current() and self._current()[1] == ",":
                 self._advance()
 
         self._advance()  # )
         self._advance()  # ;
 
-        # Emit single PRINT with all arguments
         if args:
-            print_line = "PRINT " + " ".join(args)
-            self.code.append(print_line)
+            self.code.append("PRINT " + " ".join(args))
 
-    # if statement
+
+    # if else handling
     def _if_stmt(self):
         self._advance()  # if
         self._advance()  # (
 
-        condition = self._expression()
+        left = self._expression()
+        op = self._current()[1]
+        self._advance()
+        right = self._expression()
+
+        else_label = self._new_label()
         end_label = self._new_label()
 
-        self.code.append(f"IF_FALSE {condition} GOTO {end_label}")
+        self.code.append(f"IF_FALSE {left} {op} {right} GOTO {else_label}")
 
         self._advance()  # )
         self._advance()  # {
@@ -182,7 +185,21 @@ class IntermediateCodeGenerator:
             self._statement()
 
         self._advance()  # }
+
+        self.code.append(f"GOTO {end_label}")
+        self.code.append(f"LABEL {else_label}")
+
+        if not self._is_end() and self._current()[1] == "else":
+            self._advance()
+            self._advance()
+
+            while not self._is_end() and self._current()[1] != "}":
+                self._statement()
+
+            self._advance()
+
         self.code.append(f"LABEL {end_label}")
+
 
     # while loop
     def _while_stmt(self):
@@ -194,8 +211,12 @@ class IntermediateCodeGenerator:
         self._advance()  # while
         self._advance()  # (
 
-        condition = self._expression()
-        self.code.append(f"IF_FALSE {condition} GOTO {end_label}")
+        left = self._expression()
+        op = self._current()[1]
+        self._advance()
+        right = self._expression()
+
+        self.code.append(f"IF_FALSE {left} {op} {right} GOTO {end_label}")
 
         self._advance()  # )
         self._advance()  # {
@@ -203,6 +224,7 @@ class IntermediateCodeGenerator:
         while not self._is_end() and self._current()[1] != "}":
             self._statement()
 
-        self._advance()  # }
+        self._advance()
+
         self.code.append(f"GOTO {start_label}")
         self.code.append(f"LABEL {end_label}")

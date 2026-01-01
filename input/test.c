@@ -1,4 +1,8 @@
 int x = 10;
-int y = 5;
-int z = x * y;
-printf("The output of x + y =", z);
+int y = 11;
+
+if (x > y) {
+    printf("x is greater");
+} else {
+    printf("y is greater");
+}
